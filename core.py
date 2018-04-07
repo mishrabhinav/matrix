@@ -1,8 +1,8 @@
 import json
-
 from pprint import pprint
-from matrix.fim import stats
-from utils.enums import *
+
+from enums import *
+from fim import stats
 
 _FORECAST_LOOKUP = {
     'clear-day': 1,
