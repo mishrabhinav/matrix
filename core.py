@@ -2,7 +2,7 @@ import json
 from pprint import pprint
 
 from enums import *
-from fim import stats
+from arm import stats
 
 _FORECAST_LOOKUP = {
     'clear-day': 1,
@@ -19,6 +19,7 @@ _FORECAST_LOOKUP = {
 
 
 def _norm_walking(steps):
+    result = []
     distance = 0
     duration = 0
 
@@ -26,14 +27,14 @@ def _norm_walking(steps):
         distance += step['distance']['value']
         duration += step['duration']['value']
 
-    if distance == 0 or duration == 0:
-        return []
-    elif distance < 1000 or duration < 600:
-        return [Walking.SHORT]
-    elif distance < 2500 or duration < 1200:
-        return [Walking.MEDIUM]
-    else:
-        return [Walking.LONG]
+    if 0 < distance < 1000 or duration < 600:
+        result.append(Walking.SHORT)
+    elif 1000 <= distance < 2500 or 600 <= duration < 1200:
+        result.append(Walking.MEDIUM)
+    elif 2500 <= distance or 1200 <= duration:
+        result.append(Walking.LONG)
+
+    return result, duration
 
 
 def _norm_bicycling(steps):
@@ -52,7 +53,7 @@ def _norm_bicycling(steps):
     elif 4000 <= distance or 1200 <= duration:
         result.append(Bicycling.LONG)
 
-    return result
+    return result, duration
 
 
 def _norm_transit(steps):
@@ -72,7 +73,7 @@ def _norm_transit(steps):
     elif 6000 <= distance and 1200 <= duration:
         result.append(Transit.LONG)
 
-    return result
+    return result, duration
 
 
 def _norm_driving(steps):
@@ -91,7 +92,7 @@ def _norm_driving(steps):
     elif 6000 <= distance or 1200 <= duration:
         result.append(Driving.LONG)
 
-    return result
+    return result, duration
 
 
 _NORM_STEP_LOOKUP = {
@@ -103,6 +104,8 @@ _NORM_STEP_LOOKUP = {
 
 
 def _norm_direction(direction):
+    duration = 0
+    travel_modes = []
     grouped_steps = {
         'WALKING': [],
         'BICYCLING': [],
@@ -114,12 +117,20 @@ def _norm_direction(direction):
     for step in steps:
         grouped_steps[step['travel_mode']].append(step)
 
-    travel_modes = []
     for mode, steps in grouped_steps.items():
-        travel_modes.extend(_NORM_STEP_LOOKUP[mode](steps))
+        summary, mode_duration = _NORM_STEP_LOOKUP[mode](steps)
+        travel_modes.extend(summary)
+        duration += mode_duration
 
-    cost = max([mode.cost() for mode in travel_modes], default=JourneyCost.ZERO)
+    cost = max([mode.cost() for mode in travel_modes], default=Cost.ZERO)
     travel_modes.append(cost)
+
+    if duration < 900:
+        travel_modes.append(Duration.SHORT)
+    elif duration < 1500:
+        travel_modes.append(Duration.MEDIUM)
+    else:
+        travel_modes.append(Duration.LONG)
 
     return travel_modes
 
@@ -131,6 +142,7 @@ def _norm_forecast(forecast, dest=False):
 
 
 def enumerize(item):
+    # TODO: Add Time enum
     transaction = _norm_direction(item['directions'])
     transaction.append(_norm_forecast(item['forecast'][0]))
     transaction.append(_norm_forecast(item['forecast'][1], dest=True))

@@ -1,7 +1,19 @@
 from enum import Enum
 
 
-class JourneyCost(Enum):
+class Time(Enum):
+    EARLY_MORNING = 1
+    MORNING = 2
+    AFTERNOON = 3
+    EVENING = 4
+    NIGHT = 5
+    LATE_NIGHT = 6
+
+    def __repr__(self):
+        return 'Time.{}'.format(self.name)
+
+
+class Cost(Enum):
     ZERO = 1
     CHEAP = 2
     AFFORDABLE = 3
@@ -9,23 +21,23 @@ class JourneyCost(Enum):
     UNKNOWN = 5
 
     def __repr__(self):
-        return 'JourneyCost.{}'.format(self.name)
+        return 'Cost.{}'.format(self.name)
 
     def __gt__(self, other):
-        if isinstance(other, JourneyCost):
+        if isinstance(other, Cost):
             return self.value > other.value
         else:
             return NotImplemented
 
 
-class DirectionMode(Enum):
+class Mode(Enum):
     WALKING = 1
     DRIVING = 2
     BICYCLING = 3
     TRANSIT = 4
 
     def __repr__(self):
-        return 'DirectionMode.{}'.format(self.name)
+        return 'Mode.{}'.format(self.name)
 
 
 class Walking(Enum):
@@ -38,7 +50,7 @@ class Walking(Enum):
 
     @staticmethod
     def cost():
-        return JourneyCost.ZERO
+        return Cost.ZERO
 
 
 class Driving(Enum):
@@ -51,7 +63,7 @@ class Driving(Enum):
 
     @staticmethod
     def cost():
-        return JourneyCost.AFFORDABLE
+        return Cost.AFFORDABLE
 
 
 class Bicycling(Enum):
@@ -64,7 +76,7 @@ class Bicycling(Enum):
 
     @staticmethod
     def cost():
-        return JourneyCost.ZERO
+        return Cost.ZERO
 
 
 class Transit(Enum):
@@ -77,7 +89,7 @@ class Transit(Enum):
 
     @staticmethod
     def cost():
-        return JourneyCost.ZERO
+        return Cost.ZERO
 
 
 class TransitVehicle(Enum):
@@ -104,35 +116,35 @@ class TransitVehicle(Enum):
 
     def cost(self):
         _cost_lookup = {
-            'RAIL': JourneyCost.AFFORDABLE,
-            'METRO_RAIL': JourneyCost.AFFORDABLE,
-            'SUBWAY': JourneyCost.AFFORDABLE,
-            'TRAM': JourneyCost.AFFORDABLE,
-            'MONORAIL': JourneyCost.AFFORDABLE,
-            'HEAVY_RAIL': JourneyCost.AFFORDABLE,
-            'COMMUTER_TRAIN': JourneyCost.AFFORDABLE,
-            'HIGH_SPEED_TRAIN': JourneyCost.AFFORDABLE,
-            'BUS': JourneyCost.CHEAP,
-            'INTERCITY_BUS': JourneyCost.AFFORDABLE,
-            'TROLLEYBUS': JourneyCost.AFFORDABLE,
-            'SHARE_TAXI': JourneyCost.AFFORDABLE,
-            'FERRY': JourneyCost.AFFORDABLE,
-            'CABLE_CAR': JourneyCost.AFFORDABLE,
-            'GONDOLA_LIFT': JourneyCost.AFFORDABLE,
-            'FUNICULAR': JourneyCost.AFFORDABLE,
-            'OTHER': JourneyCost.AFFORDABLE,
+            'RAIL': Cost.AFFORDABLE,
+            'METRO_RAIL': Cost.AFFORDABLE,
+            'SUBWAY': Cost.AFFORDABLE,
+            'TRAM': Cost.AFFORDABLE,
+            'MONORAIL': Cost.AFFORDABLE,
+            'HEAVY_RAIL': Cost.AFFORDABLE,
+            'COMMUTER_TRAIN': Cost.AFFORDABLE,
+            'HIGH_SPEED_TRAIN': Cost.AFFORDABLE,
+            'BUS': Cost.CHEAP,
+            'INTERCITY_BUS': Cost.AFFORDABLE,
+            'TROLLEYBUS': Cost.AFFORDABLE,
+            'SHARE_TAXI': Cost.AFFORDABLE,
+            'FERRY': Cost.AFFORDABLE,
+            'CABLE_CAR': Cost.AFFORDABLE,
+            'GONDOLA_LIFT': Cost.AFFORDABLE,
+            'FUNICULAR': Cost.AFFORDABLE,
+            'OTHER': Cost.AFFORDABLE,
         }
 
         return _cost_lookup[self.name]
 
 
-class LegDuration(Enum):
+class Duration(Enum):
     SHORT = 1
     MEDIUM = 2
     LONG = 3
 
     def __repr__(self):
-        return 'LegDuration.{}'.format(self.name)
+        return 'Duration.{}'.format(self.name)
 
 
 class StartForecast(Enum):

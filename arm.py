@@ -6,9 +6,6 @@ def stats(tracts, pre=None, post=None, algorithm='apriori', args={}):
     if pre and callable(pre):
         tracts = map(pre, tracts)
 
-    tracts = list(tracts)
-    pprint(tracts, width=120)
-
     if algorithm not in globals():
         raise ValueError('{} algorithm not available'.format(algorithm))
 
