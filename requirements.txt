@@ -1,1 +1,4 @@
 fim==6.27
+pprint==0.1
+pymodm==0.4.0
+pymongo==3.6.1
