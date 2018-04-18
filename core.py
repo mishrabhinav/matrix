@@ -141,11 +141,11 @@ def _norm_forecast(forecast, dest=False):
     return EndForecast(icon) if dest else StartForecast(icon)
 
 
-def enumerize(item):
+def enumerize(directions, forecasts):
     # TODO: Add Time enum
-    transaction = _norm_direction(item['directions'])
-    transaction.append(_norm_forecast(item['forecast'][0]))
-    transaction.append(_norm_forecast(item['forecast'][1], dest=True))
+    transaction = _norm_direction(directions)
+    transaction.append(_norm_forecast(forecasts[0]))
+    transaction.append(_norm_forecast(forecasts[1], dest=True))
 
     return transaction
 
@@ -153,15 +153,3 @@ def enumerize(item):
 def listify(item):
     enums, count = item
     return list(enums), count
-
-
-if __name__ == '__main__':
-    tracts = []
-    with open('data.json') as fp:
-        tracts = json.load(fp)
-
-    rules = list(stats(tracts, pre=enumerize, post=listify, algorithm='fpgrowth', args={'supp': 3}))
-
-    pprint(rules)
-    print('------------------------------')
-    print('Number of rules generated: {}'.format(len(rules)))
