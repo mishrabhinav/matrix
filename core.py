@@ -1,8 +1,36 @@
-import json
-from pprint import pprint
-
 from enums import *
-from arm import stats
+
+DEFAULT_SETTINGS = {
+    'distance': [3000, 6000],
+    'duration': [1200, 1800],
+    'WALKING': {
+        'show': True,
+        'distance': [1000, 2500],
+        'duration': [600, 1200]
+    },
+    'BICYCLING': {
+        'show': True,
+        'distance': [2000, 4000],
+        'duration': [600, 1200]
+    },
+    'DRIVING': {
+        'show': True,
+        'distance': [3000, 6000],
+        'duration': [600, 1200]
+    },
+    'TRANSIT': {
+        'show': True,
+        'distance': [3000, 6000],
+        'duration': [600, 1200]
+    }
+}
+
+_ENUM_LOOKUP = {
+    'WALKING': Walking,
+    'BICYCLING': Bicycling,
+    'TRANSIT': Transit,
+    'DRIVING': Driving
+}
 
 _FORECAST_LOOKUP = {
     'clear-day': 1,
@@ -18,92 +46,36 @@ _FORECAST_LOOKUP = {
 }
 
 
-def _norm_walking(steps):
+def _norm_steps(steps, settings, mode):
     result = []
-    distance = 0
-    duration = 0
+    transit_vehicles = []
+    tot_distance = 0
+    tot_duration = 0
+
+    distance = settings['distance']
+    duration = settings['duration']
+    enum = _ENUM_LOOKUP[mode]
 
     for step in steps:
-        distance += step['distance']['value']
-        duration += step['duration']['value']
+        tot_distance += step['distance']['value']
+        tot_duration += step['duration']['value']
 
-    if 0 < distance < 1000 or duration < 600:
-        result.append(Walking.SHORT)
-    elif 1000 <= distance < 2500 or 600 <= duration < 1200:
-        result.append(Walking.MEDIUM)
-    elif 2500 <= distance or 1200 <= duration:
-        result.append(Walking.LONG)
+        if mode.upper() == 'TRANSIT':
+            transit_vehicles.append(TransitVehicle[step['transit_details']['line']['vehicle']['type']])
 
-    return result, duration
+    result.extend(set(transit_vehicles))
 
+    if 0 < tot_distance < distance[0] or tot_duration < duration[0]:
+        result.append(enum.SHORT)
+    elif distance[0] <= tot_distance < distance[1] or duration[0] <= tot_duration < duration[1]:
+        result.append(enum.MEDIUM)
+    elif distance[1] <= tot_distance or duration[1] <= tot_duration:
+        result.append(enum.LONG)
 
-def _norm_bicycling(steps):
-    result = []
-    distance = 0
-    duration = 0
-
-    for step in steps:
-        distance += step['distance']['value']
-        duration += step['duration']['value']
-
-    if 0 < distance < 2000 or 0 < duration < 600:
-        result.append(Bicycling.SHORT)
-    elif 2000 <= distance < 4000 or 600 <= duration < 1200:
-        result.append(Bicycling.MEDIUM)
-    elif 4000 <= distance or 1200 <= duration:
-        result.append(Bicycling.LONG)
-
-    return result, duration
+    return result, tot_duration
 
 
-def _norm_transit(steps):
-    result = []
-    distance = 0
-    duration = 0
-
-    for step in steps:
-        distance += step['distance']['value']
-        duration += step['duration']['value']
-        result.append(TransitVehicle[step['transit_details']['line']['vehicle']['type']])
-
-    if 0 < distance < 3000 or 0 < duration < 600:
-        result.append(Transit.SHORT)
-    elif 3000 <= distance < 6000 or 600 <= duration < 1200:
-        result.append(Transit.MEDIUM)
-    elif 6000 <= distance and 1200 <= duration:
-        result.append(Transit.LONG)
-
-    return result, duration
-
-
-def _norm_driving(steps):
-    result = []
-    distance = 0
-    duration = 0
-
-    for step in steps:
-        distance += step['distance']['value']
-        duration += step['duration']['value']
-
-    if 0 < distance < 3000 or 0 < duration < 600:
-        result.append(Driving.SHORT)
-    elif 3000 <= distance < 6000 or 600 <= duration < 1200:
-        result.append(Driving.MEDIUM)
-    elif 6000 <= distance or 1200 <= duration:
-        result.append(Driving.LONG)
-
-    return result, duration
-
-
-_NORM_STEP_LOOKUP = {
-    'WALKING': _norm_walking,
-    'BICYCLING': _norm_bicycling,
-    'TRANSIT': _norm_transit,
-    'DRIVING': _norm_driving
-}
-
-
-def _norm_direction(direction):
+def _norm_direction(direction, settings):
     duration = 0
     travel_modes = []
     grouped_steps = {
@@ -118,16 +90,19 @@ def _norm_direction(direction):
         grouped_steps[step['travel_mode']].append(step)
 
     for mode, steps in grouped_steps.items():
-        summary, mode_duration = _NORM_STEP_LOOKUP[mode](steps)
+        if not steps:
+            continue
+
+        summary, mode_duration = _norm_steps(steps, settings[mode], mode)
         travel_modes.extend(summary)
         duration += mode_duration
 
     cost = max([mode.cost() for mode in travel_modes], default=Cost.ZERO)
     travel_modes.append(cost)
 
-    if duration < 900:
+    if duration < settings['duration'][0]:
         travel_modes.append(Duration.SHORT)
-    elif duration < 1500:
+    elif duration < settings['duration'][1]:
         travel_modes.append(Duration.MEDIUM)
     else:
         travel_modes.append(Duration.LONG)
@@ -141,9 +116,9 @@ def _norm_forecast(forecast, dest=False):
     return EndForecast(icon) if dest else StartForecast(icon)
 
 
-def enumerize(directions, forecasts):
+def enumerize(directions, forecasts, settings=DEFAULT_SETTINGS):
     # TODO: Add Time enum
-    transaction = _norm_direction(directions)
+    transaction = _norm_direction(directions, settings)
     transaction.append(_norm_forecast(forecasts[0]))
     transaction.append(_norm_forecast(forecasts[1], dest=True))
 
