@@ -1,3 +1,5 @@
+from math import ceil
+
 from enums import *
 
 DEFAULT_SETTINGS = {
@@ -128,3 +130,34 @@ def enumerize(directions, forecasts, settings=DEFAULT_SETTINGS):
 def listify(item):
     enums, count = item
     return list(enums), count
+
+
+def _retrieve_criterion_token(criterion, tract):
+    for t in tract:
+        if isinstance(t, criterion):
+            return t
+
+
+class Matrix:
+    def __init__(self, rules, metadata):
+        self.rules = {str(key): value for key, value in rules}
+        self.metadata = metadata
+
+    def __len__(self):
+        return len(self.rules)
+
+    def compare(self, criterion, alt_1, alt_2):
+        tok_1 = _retrieve_criterion_token(criterion, alt_1)
+        tok_2 = _retrieve_criterion_token(criterion, alt_2)
+
+        num_tok_1 = self.rules.get(str([tok_1]), 1)
+        num_tok_2 = self.rules.get(str([tok_2]), 1)
+
+        diff_toks = (num_tok_1 - num_tok_2) / self.metadata['total_trips']
+
+        if num_tok_1 == num_tok_2:
+            return 1
+        elif num_tok_1 > num_tok_2:
+            return ceil(diff_toks * 10)
+        else:
+            return 1 / ceil(abs(diff_toks) * 10)
