@@ -4,12 +4,12 @@ import time
 from datetime import datetime
 from fim import apriori
 from os import environ as env
-from pprint import pformat
 
 from pymodm import connect
 from pymodm.errors import DoesNotExist
 
-from core import listify, enumerize, DEFAULT_SETTINGS
+from core import listify, enumerize, DEFAULT_SETTINGS, Matrix
+from enums import *
 from models import *
 
 
@@ -24,21 +24,23 @@ def _generate_rules_for_user(recs, settings):
         if rec.selected and rec.forecast:
             tracts.append(_process_recommendations(rec, settings))
 
-    if not tracts:
-        return
+    metadata = {
+        'total_trips': len(tracts)
+    }
 
-    return [listify(rule) for rule in apriori(tracts, supp=-1)]
+    if not tracts:
+        return None, metadata
+
+    return [listify(rule) for rule in apriori(tracts, supp=-1)], metadata
 
 
 def _read_existing_rules():
     for rules in Rules.objects.all():
-        mock_rules = pickle.loads(rules.rules)
-        filtered_rules = [(rule, freq) for rule, freq in mock_rules if len(rule) >= 2]
+        rule_matrix: Matrix = pickle.loads(rules.rules)
 
-        formatted_rules = pformat(filtered_rules)
         logging.info(
-            'Reading {} rules for user <{}>, created at {}\n{}'.format(len(filtered_rules), rules.user,
-                                                                       rules.created_on, formatted_rules))
+            'Read {} rules for user <{}>, created at {}\n'.format(len(rule_matrix), rules.user,
+                                                                  rules.created_on))
 
 
 def _generate_rules():
@@ -50,18 +52,19 @@ def _generate_rules():
         try:
             settings = Settings.objects.get({'username': user.username})
         except DoesNotExist:
-            logging.warn('No settings found for <{}>, using default settings'.format(user.username))
+            logging.warning('No settings found for <{}>, using default settings'.format(user.username))
             settings = DEFAULT_SETTINGS
 
-        user_rules = _generate_rules_for_user(recommendations, settings)
+        user_rules, metadata = _generate_rules_for_user(recommendations, settings)
         if user_rules:
             gen_rules.append(
-                Rules(user=user.username, rules=pickle.dumps(user_rules), created_on=datetime.utcnow()))
+                Rules(user=user.username, rules=pickle.dumps(Matrix(user_rules, metadata)),
+                      created_on=datetime.utcnow()))
         else:
             logging.warning('Not enough history for user <{}>'.format(user.username))
 
-    # if gen_rules:
-    #     Rules.objects.bulk_create(gen_rules)
+    if gen_rules:
+        Rules.objects.bulk_create(gen_rules)
 
 
 def main():
