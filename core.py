@@ -1,6 +1,10 @@
+import os
 from math import ceil
 
-from enums import *
+if os.environ.get('MATRIX'):
+    from matrix.enums import *
+else:
+    from enums import *
 
 DEFAULT_SETTINGS = {
     'distance': [3000, 6000],

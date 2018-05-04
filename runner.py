@@ -9,7 +9,6 @@ from pymodm import connect
 from pymodm.errors import DoesNotExist
 
 from core import listify, enumerize, DEFAULT_SETTINGS, Matrix
-from enums import *
 from models import *
 
 
