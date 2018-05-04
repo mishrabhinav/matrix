@@ -151,6 +151,9 @@ class Matrix:
         return len(self.rules)
 
     def compare(self, criterion, alt_1, alt_2):
+        if not self.rules:
+            return 1
+
         tok_1 = _retrieve_criterion_token(criterion, alt_1)
         tok_2 = _retrieve_criterion_token(criterion, alt_2)
 
