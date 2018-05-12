@@ -44,13 +44,13 @@ def _read_existing_rules():
 
 def _generate_rules():
     gen_rules = []
-    for user in User.objects.all():
+    for user in Settings.objects.all():
         logging.info('Generating rules for user <{}>'.format(user.username))
         recommendations = Recommendations.objects.raw({'user': user.username})
 
-        try:
-            settings = Settings.objects.get({'username': user.username})
-        except DoesNotExist:
+        settings = user.data
+
+        if not settings:
             logging.warning('No settings found for <{}>, using default settings'.format(user.username))
             settings = DEFAULT_SETTINGS
 
