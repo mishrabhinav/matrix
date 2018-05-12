@@ -1,3 +1,4 @@
+import json
 import logging
 from abc import ABC, abstractmethod
 from collections import Counter
@@ -77,7 +78,7 @@ class Profile(ABC):
             'select': select
         }
 
-        r = requests.post(url, data=data, headers=headers)
+        r = requests.post(url, data=json.dumps(data), headers=headers)
         r.raise_for_status()
 
         self.counter['api_select'] += 1
