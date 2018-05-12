@@ -34,7 +34,7 @@ def _generate_rules_for_user(recs, settings):
 
 
 def _read_existing_rules():
-    for rules in Rules.objects.raw({'user': 'mishrabhinav'}).order_by([('created_on', DESCENDING)]).limit(1):
+    for rules in Rules.objects.all():
         rule_matrix: Matrix = pickle.loads(rules.rules)
 
         logging.info(
