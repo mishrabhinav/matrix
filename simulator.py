@@ -1,13 +1,18 @@
 import argparse
 import logging
 import time
+import json
 from collections import Counter
 
-from profiles import ALL_PROFILES
+from profiles import TypeA
 
 
 def _parse_args():
     parser = argparse.ArgumentParser(description='Simulate user profiles on the Recommend API')
+    parser.add_argument('-f', '--files',
+                        type=str,
+                        nargs='+',
+                        help='profiles to be simulated')
     parser.add_argument('-w', '--wait-interval',
                         type=int,
                         default=10,
@@ -24,11 +29,22 @@ def _parse_args():
     return parser.parse_args()
 
 
+def _get_profile_class(type, attributes):
+    if type == 'A':
+        return TypeA(attributes)
+
+    return
+
+
 def _main():
     counter = Counter(gmaps_directions=0, ds_forecasts=0, api_retrieve=0, api_select=0)
     args = _parse_args()
 
-    user_profiles = [profile() for profile in ALL_PROFILES]
+    user_profiles = []
+    for prof_file in args.files:
+        with open(prof_file) as prof_json:
+            attributes = json.loads(prof_json.read())
+            user_profiles.append(_get_profile_class(attributes['type'], attributes))
 
     while True:
         for prof in user_profiles:
