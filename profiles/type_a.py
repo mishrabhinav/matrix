@@ -40,6 +40,8 @@ class TypeA(Profile):
                 preferred = sorted(preferred, key=lambda x: x['legs'][0]['distance']['value'])
 
             select_id = preferred[0]['_id']
+            logging.info('Profile {} selected {} for Recommendation {}'.format(self.name, select_id, rec_id))
+
             self._api_select(select_id, rec_id)
 
         logging.info('GO for {} from {} to {}'.format(self.name, from_loc, to_loc))
