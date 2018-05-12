@@ -6,7 +6,7 @@ from fim import apriori
 from os import environ as env
 
 from pymodm import connect
-from pymodm.errors import DoesNotExist
+from pymongo import DESCENDING
 
 from core import listify, enumerize, DEFAULT_SETTINGS, Matrix
 from models import *
@@ -34,7 +34,7 @@ def _generate_rules_for_user(recs, settings):
 
 
 def _read_existing_rules():
-    for rules in Rules.objects.all():
+    for rules in Rules.objects.raw({'user': 'mishrabhinav'}).order_by([('created_on', DESCENDING)]).limit(1):
         rule_matrix: Matrix = pickle.loads(rules.rules)
 
         logging.info(
@@ -66,7 +66,7 @@ def _generate_rules():
         Rules.objects.bulk_create(gen_rules)
 
 
-def main():
+def _main():
     logging.Formatter.converter = time.gmtime
     logging.basicConfig(format='%(asctime)s [%(levelname)s] %(message)s', level=logging.INFO)
 
@@ -74,9 +74,10 @@ def main():
     connect(env['MONGODB_URI'], alias="recommend-ahp")
     logging.info('Connected to MongoDB')
 
-    _generate_rules()
-    _read_existing_rules()
+    while True:
+        _generate_rules()
+        time.sleep(600)
 
 
 if __name__ == '__main__':
-    main()
+    _main()
