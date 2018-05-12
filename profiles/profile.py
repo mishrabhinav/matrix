@@ -27,6 +27,8 @@ class Profile(ABC):
 
         if not self._check_auth():
             raise ProfileException('Check Access Token for {}'.format(self.name))
+        else:
+            logging.info('Authenticated {}'.format(self.name))
 
     def _check_auth(self):
         headers = {
@@ -51,7 +53,7 @@ class Profile(ABC):
             'Authorization': self.access_token
         }
 
-        url = '{}/api/retrieve?from={},{}&tp={},{}'.format(env['API_URL'], from_coord[0], from_coord[1], to_coord[0],
+        url = '{}/api/retrieve?from={},{}&to={},{}'.format(env['API_URL'], from_coord[0], from_coord[1], to_coord[0],
                                                            to_coord[1])
 
         r = requests.get(url, headers=headers)
