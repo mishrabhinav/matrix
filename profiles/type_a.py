@@ -17,7 +17,7 @@ class TypeA(Profile):
         rec_id = retrieve_resp['recommendation_id']
         loc_key = '{}{}'.format(from_loc, to_loc) if from_loc < to_loc else '{}{}'.format(to_loc, from_loc)
 
-        directions = list(filter(lambda x: x['_mode'] in self.negative_mode, retrieve_resp['directions']))
+        directions = list(filter(lambda x: x['_mode'] not in self.negative_mode, retrieve_resp['directions']))
 
         if directions:
             preferred = []

@@ -15,7 +15,7 @@ def _parse_args():
                         help='profiles to be simulated')
     parser.add_argument('-w', '--wait-interval',
                         type=int,
-                        default=10,
+                        default=60,
                         help='wait time between two go actions')
     parser.add_argument('-ds', '--darksky-limit',
                         type=int,
