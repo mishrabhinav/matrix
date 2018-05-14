@@ -6,7 +6,6 @@ from fim import apriori
 from os import environ as env
 
 from pymodm import connect
-from pymongo import DESCENDING
 
 from core import listify, enumerize, DEFAULT_SETTINGS, Matrix
 from models import *

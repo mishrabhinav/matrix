@@ -23,7 +23,7 @@ class Profile(ABC):
         self.shortest: bool = attributes['shortest']
         self.fastest: bool = attributes['fastest']
 
-        self.access_token = 'Bearer {}'.format(env['{}_ACCESS'.format(self.name)])
+        self.access_token = 'Bearer {}'.format(attributes['accessToken'])
         self.counter = Counter(gmaps_directions=0, ds_forecasts=0, api_retrieve=0, api_select=0)
 
         if not self._check_auth():
