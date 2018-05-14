@@ -36,7 +36,7 @@ class Profile(ABC):
             'Authorization': self.access_token
         }
 
-        r = requests.get('{}/api'.format(env['API_URL']), headers=headers)
+        r = requests.get('{}/api/user'.format(env['API_URL']), headers=headers)
 
         if r.status_code == requests.codes.ok:
             return True
