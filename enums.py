@@ -2,12 +2,12 @@ from enum import Enum
 
 
 class Time(Enum):
-    EARLY_MORNING = 1
-    MORNING = 2
-    AFTERNOON = 3
-    EVENING = 4
-    NIGHT = 5
-    LATE_NIGHT = 6
+    EARLY_MORNING = 1  # 04:00 to 06:59
+    MORNING = 2        # 7:00 to 11:59
+    AFTERNOON = 3      # 12:00 to 16:59
+    EVENING = 4        # 17:00 to 20:59
+    NIGHT = 5          # 21:00 to 23:59
+    LATE_NIGHT = 6     # 00:00 to 03:59
 
     def __repr__(self):
         return 'Time.{}'.format(self.name)

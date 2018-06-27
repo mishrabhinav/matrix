@@ -1,5 +1,6 @@
 import os
 from math import ceil
+from datetime import datetime
 
 if os.environ.get('MATRIX'):
     from matrix.enums import *
@@ -122,11 +123,35 @@ def _norm_forecast(forecast, dest=False):
     return EndForecast(icon) if dest else StartForecast(icon)
 
 
-def enumerize(directions, forecasts, settings=DEFAULT_SETTINGS):
+def _norm_journey_time(created_on: datetime):
+    hour = created_on.hour
+
+    if 0 <= hour < 4:
+        return Time.LATE_NIGHT
+    elif 4 <= hour < 7:
+        return Time.EARLY_MORNING
+    elif 7 <= hour < 12:
+        return Time.MORNING
+    elif 12 <= hour < 17:
+        return Time.AFTERNOON
+    elif 17 <= hour < 21:
+        return Time.EVENING
+    elif 21 <= hour:
+        return Time.NIGHT
+
+
+def enumerize(directions, forecasts, created_on, settings=DEFAULT_SETTINGS):
+    """Deprecated. Use enum_repr instead.
+    """
+    return enum_repr(directions, forecasts, created_on, settings)
+
+
+def enum_repr(directions, forecasts, created_on, settings=DEFAULT_SETTINGS):
     # TODO: Add Time enum
     transaction = _norm_direction(directions, settings)
     transaction.append(_norm_forecast(forecasts[0]))
     transaction.append(_norm_forecast(forecasts[1], dest=True))
+    transaction.append(_norm_journey_time(created_on))
 
     return transaction
 

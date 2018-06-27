@@ -7,13 +7,13 @@ from os import environ as env
 
 from pymodm import connect
 
-from core import listify, enumerize, DEFAULT_SETTINGS, Matrix
+from core import listify, enum_repr, DEFAULT_SETTINGS, Matrix
 from models import *
 
 
 def _process_recommendations(recommendation, settings):
     forecasts = [forecast.data for forecast in recommendation.forecast]
-    return enumerize(recommendation.selected.data['legs'][0], forecasts, settings)
+    return enum_repr(recommendation.selected.data['legs'][0], forecasts, recommendation.created_on, settings)
 
 
 def _generate_rules_for_user(recs, settings):
@@ -75,6 +75,7 @@ def _main():
 
     while True:
         _generate_rules()
+        logging.info('Going to sleep')
         time.sleep(600)
 
 
